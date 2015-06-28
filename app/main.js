@@ -1,117 +1,39 @@
 /** @jsx React.DOM */
 var React = require('react');
-// var App = require('./App.js');
-// React.render(<App/>, document.body);
+var CommentBox = require('./CommentBox.js');
+var App = require('./App.js');
+var FilterableProductTable = require('./FilterableProductTable.js');
 
-var Comment = React.createClass({
-  render: function() {
-    var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
-    return (
-      <div className="comment">
-        <h2 className="commentAuthor">
-          {this.props.author}
-        </h2>
-        <span dangerouslySetInnerHTML={{__html: rawMarkup}}/>
-      </div>
-    );
-  }
-});
+function commentBoxApp() {
+  React.render(
+    <CommentBox url="comments.json" pollInterval={2000} />,
+    document.getElementById('content')
+  );  
+}
 
-var CommentList = React.createClass({
-  render: function() {
-    var commentNodes = this.props.data.map(function(comment) {
-      return (
-        <Comment author={comment.author}>
-          {comment.text}
-        </Comment>        
-      );
-    });
-    return (
-      <div className="commentList">
-        {commentNodes}
-      </div>
-    );
-  }
-});
+function reactApp() {
+  React.render(
+    <App/>,
+    document.getElementById('content')
+  );
+}
 
-var CommentForm = React.createClass({
-  handleSubmit: function(e) { 
-    e.preventDefault();
-    var author = React.findDOMNode(this.refs.author).value.trim();
-    var text = React.findDOMNode(this.refs.text).value.trim();
-    if (!text || !author) {
-      return;
-    }
-    this.props.onCommentSubmit({author: author, text: text});
-    React.findDOMNode(this.refs.author).value = '';
-    React.findDOMNode(this.refs.text).value = '';
-    return;
-  },
-  render: function() {
-    return (
-      <form className="commentForm" onSubmit={this.handleSubmit}>
-        <input type="text" placeholder="Your name" ref="author"/> 
-        <input type="text" placeholder="Say something..." ref="text"/> 
-        <input type="submit" value="Post" /> 
-      </form>
-    );
-  }
-});
+function filterableProductTableApp() {
+  var PRODUCTS = [
+    {category: 'Sporting Goods', price: '$49.99', stocked: true, name: 'Football'},
+    {category: 'Sporting Goods', price: '$9.99', stocked: true, name: 'Baseball'},
+    {category: 'Sporting Goods', price: '$29.99', stocked: false, name: 'Basketball'},
+    {category: 'Electronics', price: '$99.99', stocked: true, name: 'iPod Touch'},
+    {category: 'Electronics', price: '$399.99', stocked: false, name: 'iPhone 5'},
+    {category: 'Electronics', price: '$199.99', stocked: true, name: 'Nexus 7'}
+  ];
 
-var CommentBox = React.createClass({
-  loadCommentsFromServer: function() { 
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      cache: false,
-      success: function(data) { 
-        this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)
-    });
-  },
-  handleCommentSubmit: function(comment) {
-    // Optimistically update the list
-    var comments = this.state.data;
-    var newComments = comments.concat([comment]);
-    this.setState({data: newComments});
-    
-    // submit to the server
-    $.ajax({
-      url: this.props.url,
-      dataType: 'json',
-      type: 'POST',
-      data: comment,
-      success: function(data) { 
-        this.setState({data: data});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.url, status, err.toString());
-      }.bind(this)      
-    });
-  },
-  getInitialState: function() { 
-    return {data: []};
-  },
-  componentDidMount: function() { 
-    this.loadCommentsFromServer();
-    setInterval(this.loadCommentsFromServer, this.props.pollInterval);
-  },
-  render: function() {
-    return (
-      <div className="commentBox">
-        <h1>Comments</h1>
-        <CommentList data={this.state.data} />
-        <CommentForm onCommentSubmit={this.handleCommentSubmit} />
-      </div>
-    );
-  }
-});
+  React.render(
+    <FilterableProductTable products={PRODUCTS} />,
+    document.getElementById('content')
+  );
+}
 
-React.render(
-  <CommentBox url="comments.json" pollInterval={2000} />,
-  document.getElementById('content')
-);
-
+commentBoxApp();
+//reactApp();
+//filterableProductTableApp();
