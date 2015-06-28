@@ -34,6 +34,6 @@ function filterableProductTableApp() {
   );
 }
 
-commentBoxApp();
+//commentBoxApp();
 //reactApp();
-//filterableProductTableApp();
+filterableProductTableApp();
